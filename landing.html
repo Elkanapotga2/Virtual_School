@@ -473,115 +473,127 @@
     <script>
         const PHP_API = "api/lms_handler.php";
 
-        // Gestion de session
-        function getRole() { return localStorage.getItem("user_role") || "etudiant"; }
+        function getRole()     { return localStorage.getItem("user_role") || "etudiant"; }
         function getUsername() { return localStorage.getItem("username") || "Invité"; }
+        function getUserId()   { return localStorage.getItem("user_id") || 0; }
 
-        // Initialisation de la page en fonction du rôle
+        // ── INIT ──────────────────────────────────────────────────────────────
         document.addEventListener("DOMContentLoaded", () => {
+            // Redirection si non connecté
+            if (!localStorage.getItem("username")) {
+                window.location.href = "login.html"; return;
+            }
+
             const role = getRole();
             document.getElementById("nav-username").textContent = getUsername();
             document.getElementById("user-role-badge").textContent = role.toUpperCase();
 
             const actionBtn = document.getElementById("action-btn");
-            const statWidget = document.getElementById("stat-content-area");
 
             if (role === "enseignant") {
                 actionBtn.textContent = "➕ Ajouter une Leçon";
                 document.getElementById("hero-title").innerHTML = "Espace <em>Enseignant</em>.<br>Partagez votre savoir.";
-                statWidget.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; padding: 0.4rem 0;"><span>Cours créés</span><strong style="color:var(--accent);">4</strong></div>
-                    <div style="display:flex; justify-content:space-between; padding: 0.4rem 0;"><span>Évaluations actives</span><strong style="color:var(--accent);">4</strong></div>
-                `;
+                loadEnseignantStats();
             } else if (role === "promoteur") {
                 actionBtn.textContent = "⚙️ Définir un Module";
                 document.getElementById("hero-title").innerHTML = "Espace <em>Promoteur</em>.<br>Gérez les certifications.";
-                statWidget.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; padding: 0.4rem 0;"><span>Modules Total</span><strong style="color:var(--accent);">3</strong></div>
-                    <div style="display:flex; justify-content:space-between; padding: 0.4rem 0;"><span>Certificats Délivrés</span><strong style="color:var(--accent);">12</strong></div>
-                `;
-            } else { // Étudiant
-                actionBtn.style.display = "none"; // L'étudiant ne crée rien
+                loadPromoteurStats();
+            } else {
+                actionBtn.style.display = "none";
                 document.getElementById("widget-certifs").style.display = "block";
-                statWidget.innerHTML = `
-                    <div style="margin-bottom:10px;">
-                        <div style="display:flex; justify-content:space-between; font-size:0.85rem;"><span>Progression globale</span><strong>45%</strong></div>
-                        <div class="progress-bar-container"><div class="progress-bar" style="width: 45%;"></div></div>
-                    </div>
-                `;
+                loadStudentStats();
             }
+
+            loadModuleFilters();
             loadLessons();
         });
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = "login.html";
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById("toast");
-            t.textContent = msg; t.classList.add("show");
-            setTimeout(() => t.classList.remove("show"), 3000);
-        }
-
-        // Configuration de la boîte de dialogue modale selon le rôle
-        function openModal() {
-            const role = getRole();
-            const formZone = document.getElementById("modal-form-content");
-
-            if (role === "enseignant") {
-                document.getElementById("modal-title").textContent = "➕ Publier une leçon";
-                formZone.innerHTML = `
-                    <label>Titre de la leçon *</label>
-                    <input id="l-title" placeholder="ex: Introduction aux bases de données">
-                    
-                    <label>Module de rattachement</label>
-                    <select id="l-module"><option value="1">Module Base de Données</option></select>
-
-                    <label>Type de support *</label>
-                    <select id="l-type" onchange="toggleSupportField()">
-                        <option value="pdf">Document PDF (Lien ou nom de fichier)</option>
-                        <option value="video">Vidéo (Lien MP4 / YouTube)</option>
-                    </select>
-
-                    <label>Lien / Fichier du cours *</label>
-                    <input id="l-url" placeholder="cours.pdf ou URL vidéo">
-
-                    <h3 style="font-family:'Playfair Display'; margin: 15px 0 10px 0; font-size:1.1rem; border-bottom:1px solid var(--border);">📝 Évaluation de fin de leçon</h3>
-                    <label>Question du Quiz</label>
-                    <input id="q-text" placeholder="Ex: Que signifie SQL ?">
-                    <label>Réponse attendue</label>
-                    <input id="q-reply" placeholder="Structured Query Language">
-
-                    <button class="btn-publish" onclick="submitLesson()">Publier la leçon & le Quiz</button>
-                `;
-            } else if (role === "promoteur") {
-                document.getElementById("modal-title").textContent = "⚙️ Créer un nouveau Module";
-                formZone.innerHTML = `
-                    <label>Nom du Module *</label>
-                    <input id="m-title" placeholder="ex: Développement Web Avancé">
-                    <label>Description</label>
-                    <textarea id="m-desc" placeholder="Décrivez les compétences visées..."></textarea>
-                    <button class="btn-publish" onclick="submitModule()">Créer le Module</button>
-                `;
+        // ── STATS ─────────────────────────────────────────────────────────────
+        async function loadStudentStats() {
+            const zone = document.getElementById("stat-content-area");
+            try {
+                const res = await fetch(`${PHP_API}?action=get_student_stats&etudiant_id=${getUserId()}`);
+                const data = await res.json();
+                const pct = data.progression || 0;
+                zone.innerHTML = `
+                    <div style="margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.85rem;">
+                            <span>Progression globale</span><strong>${pct}%</strong>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar" style="width:${pct}%"></div>
+                        </div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.4rem 0; font-size:0.85rem;">
+                        <span>Leçons validées</span><strong style="color:var(--gold)">${data.valides} / ${data.total}</strong>
+                    </div>`;
+            } catch(e) {
+                zone.innerHTML = `<p style="color:var(--muted); font-size:0.85rem">Impossible de charger les stats.</p>`;
             }
-            document.getElementById("main-modal").classList.add("open");
         }
 
-        function closeModal() { document.getElementById("main-modal").classList.remove("open"); }
+        async function loadEnseignantStats() {
+            const zone = document.getElementById("stat-content-area");
+            try {
+                const res = await fetch(`${PHP_API}?action=get_lessons`);
+                const data = await res.json();
+                const myLessons = (data.data || []).filter(l => l.enseignant_name === getUsername());
+                zone.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; padding:0.4rem 0;">
+                        <span>Cours publiés</span><strong style="color:var(--accent)">${myLessons.length}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.4rem 0;">
+                        <span>Évaluations actives</span><strong style="color:var(--accent)">${myLessons.length}</strong>
+                    </div>`;
+            } catch(e) {}
+        }
 
-        // Rendu AJAX des leçons
+        async function loadPromoteurStats() {
+            const zone = document.getElementById("stat-content-area");
+            try {
+                const res = await fetch(`${PHP_API}?action=get_modules`);
+                const data = await res.json();
+                zone.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; padding:0.4rem 0;">
+                        <span>Modules créés</span><strong style="color:var(--accent)">${(data.data||[]).length}</strong>
+                    </div>`;
+            } catch(e) {}
+        }
+
+        // ── FILTRES PAR MODULE ────────────────────────────────────────────────
+        async function loadModuleFilters() {
+            try {
+                const res = await fetch(`${PHP_API}?action=get_modules`);
+                const data = await res.json();
+                const modules = data.data || [];
+                const container = document.getElementById("module-filters-list");
+                modules.forEach(m => {
+                    const btn = document.createElement("button");
+                    btn.className = "filter-btn";
+                    btn.textContent = m.titre;
+                    btn.onclick = () => {
+                        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                        btn.classList.add("active");
+                        loadLessons(m.id);
+                    };
+                    container.appendChild(btn);
+                });
+            } catch(e) {}
+        }
+
+        // ── CHARGEMENT DES LEÇONS ─────────────────────────────────────────────
         async function loadLessons(moduleId = null) {
             const listZone = document.getElementById("lessons-list");
-            listZone.innerHTML = "Chargement des cours...";
-
+            listZone.innerHTML = `<p style="color:var(--muted); padding:1rem">Chargement des cours...</p>`;
             try {
                 const res = await fetch(`${PHP_API}?action=get_lessons`);
                 const responseData = await res.json();
-                const lessons = responseData.data || [];
+                let lessons = responseData.data || [];
+
+                if (moduleId) lessons = lessons.filter(l => l.module_id == moduleId);
 
                 if (lessons.length === 0) {
-                    listZone.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--muted)">Aucune leçon disponible pour le moment.</div>';
+                    listZone.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--muted)">Aucune leçon disponible pour le moment.</div>`;
                     return;
                 }
 
@@ -592,50 +604,228 @@
                     card.innerHTML = `
                         <div class="card-meta">
                             <span class="card-cat">${l.type_support.toUpperCase()}</span>
-                            <span style="font-size:0.78rem; color:var(--muted)">Module: ${l.module_name}</span>
+                            <span style="font-size:0.78rem; color:var(--muted)">Module : ${l.module_name}</span>
                         </div>
                         <div class="card-title">${l.titre}</div>
+                        <p class="card-excerpt" style="font-size:0.85rem; color:var(--muted); margin:0.5rem 0">
+                            Quiz : <em>${l.quiz_question}</em>
+                        </p>
                         <div class="card-footer">
-                            <span style="font-size:0.85rem; color:var(--muted)">Par: Prof. ${l.enseignant_name}</span>
+                            <span style="font-size:0.85rem; color:var(--muted)">Par : ${l.enseignant_name}</span>
                             <div style="display:flex; gap:10px;">
-                                <a href="${l.support_url}" target="_blank" class="btn-sm btn-read">📖 Étudier le cours</a>
-                                ${getRole() === 'etudiant' ? `<button class="btn-sm btn-write" style="background:var(--gold);" onclick="openQuiz(${l.id})">📝 Passer l'Évaluation</button>` : ''}
+                                <a href="${l.support_url}" target="_blank" class="btn-sm btn-read">📖 Étudier</a>
+                                ${getRole() === 'etudiant' ? `<button class="btn-sm btn-write" style="background:var(--gold); color:#fff; border:none;" onclick="openQuiz(${l.id}, \`${l.quiz_question.replace(/`/g,"'")}\`)">📝 Évaluation</button>` : ''}
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                     listZone.appendChild(card);
                 });
-            } catch (e) {
-                // Simulation locale pour que ton rendu fonctionne avant que ton PHP soit écrit
-                mockLessons(listZone);
+            } catch(e) {
+                listZone.innerHTML = `<p style="color:var(--accent); padding:1rem">Erreur de chargement des cours.</p>`;
             }
         }
 
-        // Données d'exemple conformes au cahier des charges de M. Messi
-        function mockLessons(zone) {
-            zone.innerHTML = `
-                <div class="article-card">
-                    <div class="card-meta"><span class="card-cat">PDF</span> <span style="font-size:0.78rem; color:var(--muted)">Module 1 : Base de Données</span></div>
-                    <div class="card-title">Leçon 1 : Modèle Entité-Association & Algèbre Relationnelle</div>
-                    <div class="card-excerpt">Ce cours introduit les concepts de clés primaires, étrangères et la modélisation de schémas MySQL conformes aux exigences du cours INF222.</div>
-                    <div class="card-footer">
-                        <span style="font-size:0.85rem; color:var(--muted)">Par: Prof. Messi</span>
-                        <div style="display:flex; gap:10px;">
-                            <a href="#" class="btn-sm btn-read">📖 Lire le PDF</a>
-                            ${getRole() === 'etudiant' ? `<button class="btn-sm btn-write" style="background:var(--gold);" onclick="showToast('Ouverture du Quiz de validation...')">📝 Faire l'Évaluation</button>` : ''}
-                        </div>
-                    </div>
-                </div>
-            `;
+        // ── RECHERCHE ─────────────────────────────────────────────────────────
+        function searchLessons() {
+            const q = document.getElementById("search-input").value.toLowerCase().trim();
+            document.querySelectorAll(".article-card").forEach(card => {
+                const title = card.querySelector(".card-title")?.textContent.toLowerCase() || "";
+                const module = card.querySelector(".card-meta")?.textContent.toLowerCase() || "";
+                card.style.display = (title.includes(q) || module.includes(q)) ? "" : "none";
+            });
         }
 
+        // ── MODAL OUVERTURE ───────────────────────────────────────────────────
+        async function openModal() {
+            const role = getRole();
+            const formZone = document.getElementById("modal-form-content");
+
+            if (role === "enseignant") {
+                document.getElementById("modal-title").textContent = "➕ Publier une leçon";
+
+                // Charger les modules dynamiquement
+                let moduleOptions = '<option value="">Chargement...</option>';
+                try {
+                    const res = await fetch(`${PHP_API}?action=get_modules`);
+                    const data = await res.json();
+                    const modules = data.data || [];
+                    if (modules.length === 0) {
+                        moduleOptions = '<option value="">Aucun module disponible — demandez au Promoteur</option>';
+                    } else {
+                        moduleOptions = modules.map(m => `<option value="${m.id}">${m.titre}</option>`).join("");
+                    }
+                } catch(e) { moduleOptions = '<option value="">Erreur de chargement</option>'; }
+
+                formZone.innerHTML = `
+                    <label>Titre de la leçon *</label>
+                    <input id="l-title" placeholder="ex: Introduction aux bases de données">
+
+                    <label>Module de rattachement *</label>
+                    <select id="l-module">${moduleOptions}</select>
+
+                    <label>Type de support *</label>
+                    <select id="l-type">
+                        <option value="pdf">Document PDF</option>
+                        <option value="video">Vidéo (lien MP4 / YouTube)</option>
+                    </select>
+
+                    <label>Lien du cours *</label>
+                    <input id="l-url" placeholder="https://... ou nom-du-fichier.pdf">
+
+                    <h3 style="font-family:'Playfair Display'; margin:15px 0 10px; font-size:1.1rem; border-bottom:1px solid var(--border); padding-bottom:8px;">📝 Évaluation de fin de leçon</h3>
+                    <label>Question du Quiz *</label>
+                    <input id="q-text" placeholder="Ex: Que signifie SQL ?">
+                    <label>Réponse attendue *</label>
+                    <input id="q-reply" placeholder="Structured Query Language">
+
+                    <div id="lesson-msg" style="font-size:0.85rem; margin-bottom:0.5rem;"></div>
+                    <button class="btn-publish" onclick="submitLesson()">Publier la leçon & le Quiz</button>`;
+
+            } else if (role === "promoteur") {
+                document.getElementById("modal-title").textContent = "⚙️ Créer un nouveau Module";
+                formZone.innerHTML = `
+                    <label>Nom du Module *</label>
+                    <input id="m-title" placeholder="ex: Développement Web Avancé">
+                    <label>Description</label>
+                    <textarea id="m-desc" rows="3" placeholder="Décrivez les compétences visées..."></textarea>
+                    <div id="module-msg" style="font-size:0.85rem; margin-bottom:0.5rem;"></div>
+                    <button class="btn-publish" onclick="submitModule()">Créer le Module</button>`;
+            }
+            document.getElementById("main-modal").classList.add("open");
+        }
+
+        function closeModal() { document.getElementById("main-modal").classList.remove("open"); }
+
+        // ── SOUMETTRE UNE LEÇON ───────────────────────────────────────────────
         async function submitLesson() {
-            // Logique AJAX POST pour insérer la leçon dans ta future table MySQL via PHP
-            showToast("✅ Leçon enregistrée avec succès avec son évaluation !");
-            closeModal();
-            loadLessons();
+            const titre        = document.getElementById("l-title").value.trim();
+            const module_id    = document.getElementById("l-module").value;
+            const type_support = document.getElementById("l-type").value;
+            const support_url  = document.getElementById("l-url").value.trim();
+            const quiz_question = document.getElementById("q-text").value.trim();
+            const quiz_reponse  = document.getElementById("q-reply").value.trim();
+            const msgEl = document.getElementById("lesson-msg");
+
+            if (!titre || !module_id || !support_url || !quiz_question || !quiz_reponse) {
+                msgEl.style.color = "var(--accent)";
+                msgEl.textContent = "⚠️ Veuillez remplir tous les champs obligatoires.";
+                return;
+            }
+
+            msgEl.style.color = "var(--muted)";
+            msgEl.textContent = "Envoi en cours...";
+
+            try {
+                const res = await fetch(`${PHP_API}?action=add_lesson`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        titre, module_id, enseignant_id: getUserId(),
+                        type_support, support_url, quiz_question, quiz_reponse
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    msgEl.style.color = "var(--accent)";
+                    msgEl.textContent = "❌ " + (data.error || "Erreur inconnue.");
+                } else {
+                    showToast("✅ Leçon publiée avec succès !");
+                    closeModal();
+                    loadLessons();
+                    loadEnseignantStats();
+                }
+            } catch(e) {
+                msgEl.style.color = "var(--accent)";
+                msgEl.textContent = "❌ Impossible de contacter le serveur.";
+            }
+        }
+
+        // ── SOUMETTRE UN MODULE ───────────────────────────────────────────────
+        async function submitModule() {
+            const titre = document.getElementById("m-title").value.trim();
+            const description = document.getElementById("m-desc").value.trim();
+            const msgEl = document.getElementById("module-msg");
+
+            if (!titre) {
+                msgEl.style.color = "var(--accent)";
+                msgEl.textContent = "⚠️ Le nom du module est obligatoire.";
+                return;
+            }
+
+            msgEl.style.color = "var(--muted)";
+            msgEl.textContent = "Création en cours...";
+
+            try {
+                const res = await fetch(`${PHP_API}?action=add_module`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ titre, description })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    msgEl.style.color = "var(--accent)";
+                    msgEl.textContent = "❌ " + (data.error || "Erreur inconnue.");
+                } else {
+                    showToast("✅ Module créé avec succès !");
+                    closeModal();
+                    loadModuleFilters();
+                    loadPromoteurStats();
+                }
+            } catch(e) {
+                msgEl.style.color = "var(--accent)";
+                msgEl.textContent = "❌ Impossible de contacter le serveur.";
+            }
+        }
+
+        // ── QUIZ ÉTUDIANT ─────────────────────────────────────────────────────
+        function openQuiz(lessonId, question) {
+            const overlay = document.getElementById("main-modal");
+            document.getElementById("modal-title").textContent = "📝 Évaluation";
+            document.getElementById("modal-form-content").innerHTML = `
+                <p style="font-size:0.95rem; margin-bottom:1rem; color:var(--ink)"><strong>Question :</strong> ${question}</p>
+                <label>Votre réponse *</label>
+                <input id="quiz-answer" placeholder="Entrez votre réponse ici...">
+                <div id="quiz-msg" style="font-size:0.85rem; margin-bottom:0.5rem;"></div>
+                <button class="btn-publish" onclick="submitQuiz(${lessonId})">Valider ma réponse</button>`;
+            overlay.classList.add("open");
+        }
+
+        async function submitQuiz(lessonId) {
+            const reponse = document.getElementById("quiz-answer").value.trim();
+            const msgEl   = document.getElementById("quiz-msg");
+
+            if (!reponse) {
+                msgEl.style.color = "var(--accent)";
+                msgEl.textContent = "⚠️ Entrez votre réponse avant de valider.";
+                return;
+            }
+
+            try {
+                const res = await fetch(`${PHP_API}?action=submit_quiz`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ etudiant_id: getUserId(), lesson_id: lessonId, reponse_etudiant: reponse })
+                });
+                const data = await res.json();
+                msgEl.style.color = data.correct ? "green" : "var(--accent)";
+                msgEl.textContent = data.message;
+
+                if (data.correct) {
+                    setTimeout(() => { closeModal(); loadStudentStats(); }, 1500);
+                }
+            } catch(e) {
+                msgEl.style.color = "var(--accent)";
+                msgEl.textContent = "❌ Erreur lors de la soumission.";
+            }
+        }
+
+        // ── UTILITAIRES ───────────────────────────────────────────────────────
+        function logout() { localStorage.clear(); window.location.href = "login.html"; }
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg; t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), 3000);
         }
     </script>
 </body>
-
 </html>

@@ -642,25 +642,13 @@
             if (role === "enseignant") {
                 document.getElementById("modal-title").textContent = "➕ Publier une leçon";
 
-                // Charger les modules dynamiquement
-                let moduleOptions = '<option value="">Chargement...</option>';
-                try {
-                    const res = await fetch(`${PHP_API}?action=get_modules`);
-                    const data = await res.json();
-                    const modules = data.data || [];
-                    if (modules.length === 0) {
-                        moduleOptions = '<option value="">Aucun module disponible — demandez au Promoteur</option>';
-                    } else {
-                        moduleOptions = modules.map(m => `<option value="${m.id}">${m.titre}</option>`).join("");
-                    }
-                } catch(e) { moduleOptions = '<option value="">Erreur de chargement</option>'; }
 
                 formZone.innerHTML = `
                     <label>Titre de la leçon *</label>
                     <input id="l-title" placeholder="ex: Introduction aux bases de données">
 
                     <label>Module de rattachement *</label>
-                    <select id="l-module">${moduleOptions}</select>
+                    <input id="l-module-name" placeholder="ex: Base de Données, Réseaux, Algo...">
 
                     <label>Type de support *</label>
                     <select id="l-type">
@@ -697,24 +685,62 @@
 
         // ── SOUMETTRE UNE LEÇON ───────────────────────────────────────────────
         async function submitLesson() {
-            const titre        = document.getElementById("l-title").value.trim();
-            const module_id    = document.getElementById("l-module").value;
-            const type_support = document.getElementById("l-type").value;
-            const support_url  = document.getElementById("l-url").value.trim();
+            const titre         = document.getElementById("l-title").value.trim();
+            const module_name   = document.getElementById("l-module-name").value.trim();
+            const type_support  = document.getElementById("l-type").value;
+            const support_url   = document.getElementById("l-url").value.trim();
             const quiz_question = document.getElementById("q-text").value.trim();
             const quiz_reponse  = document.getElementById("q-reply").value.trim();
             const msgEl = document.getElementById("lesson-msg");
 
-            if (!titre || !module_id || !support_url || !quiz_question || !quiz_reponse) {
+            if (!titre || !module_name || !support_url || !quiz_question || !quiz_reponse) {
                 msgEl.style.color = "var(--accent)";
                 msgEl.textContent = "⚠️ Veuillez remplir tous les champs obligatoires.";
                 return;
             }
 
             msgEl.style.color = "var(--muted)";
-            msgEl.textContent = "Envoi en cours...";
+            msgEl.textContent = "Vérification du module...";
 
             try {
+                // 1. Chercher si le module existe déjà
+                const modRes = await fetch(`${PHP_API}?action=get_modules`);
+                const modData = await modRes.json();
+                const modules = modData.data || [];
+                let module_id = null;
+
+                const existing = modules.find(m => m.titre.toLowerCase() === module_name.toLowerCase());
+                if (existing) {
+                    module_id = existing.id;
+                } else {
+                    // 2. Créer le module automatiquement
+                    msgEl.textContent = "Création du module...";
+                    const createRes = await fetch(`${PHP_API}?action=add_module`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ titre: module_name, description: "" })
+                    });
+                    const createData = await createRes.json();
+                    if (!createRes.ok) {
+                        msgEl.style.color = "var(--accent)";
+                        msgEl.textContent = "❌ Impossible de créer le module : " + (createData.error || "");
+                        return;
+                    }
+                    // Récupérer l'id du module nouvellement créé
+                    const modRes2 = await fetch(`${PHP_API}?action=get_modules`);
+                    const modData2 = await modRes2.json();
+                    const newMod = (modData2.data || []).find(m => m.titre.toLowerCase() === module_name.toLowerCase());
+                    module_id = newMod ? newMod.id : null;
+                }
+
+                if (!module_id) {
+                    msgEl.style.color = "var(--accent)";
+                    msgEl.textContent = "❌ Impossible de résoudre le module.";
+                    return;
+                }
+
+                // 3. Publier la leçon
+                msgEl.textContent = "Publication de la leçon...";
                 const res = await fetch(`${PHP_API}?action=add_lesson`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -731,6 +757,7 @@
                     showToast("✅ Leçon publiée avec succès !");
                     closeModal();
                     loadLessons();
+                    loadModuleFilters();
                     loadEnseignantStats();
                 }
             } catch(e) {

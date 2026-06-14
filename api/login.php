@@ -1,6 +1,6 @@
 <?php
-
-require_once __DIR__ . '/db.php'; // ✅ chemin absolu
+// ✅ FIX : chemin absolu pour éviter les erreurs avec le router
+require_once __DIR__ . '/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
@@ -15,14 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($stmt->rowCount() > 0) {
             $row = $stmt->fetch();
             
-            // Vérification du mot de passe
             if (password_verify($data->password, $row['password'])) {
                 http_response_code(200);
                 echo json_encode([
-                    "message" => "Connexion réussie.",
-                    "user_id" => $row['id'],
+                    "message"  => "Connexion réussie.",
+                    "user_id"  => $row['id'],
                     "username" => $row['username'],
-                    "role" => $row['role']
+                    "role"     => $row['role']
                 ]);
             } else {
                 http_response_code(401);

@@ -227,7 +227,7 @@
                     localStorage.setItem("user_id", data.user_id);
 
                     msg.className = "msg success"; msg.textContent = "✅ Connexion réussie ! Redirection...";
-                    setTimeout(() => window.location.href = "index.html", 1000);
+                    setTimeout(() => window.location.href = "landing.html", 1000);
                 }
             } catch (e) {
                 msg.className = "msg error"; msg.textContent = "Impossible de contacter le serveur.";

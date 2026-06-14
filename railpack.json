@@ -1,9 +1,9 @@
 {
   "provider": "php",
-  "php": {
-    "extensions": ["pdo", "pdo_mysql"]
-  },
   "deploy": {
     "startCommand": "php -S 0.0.0.0:$PORT router.php"
+  },
+  "build": {
+    "aptPackages": ["php8.4-mysql"]
   }
 }

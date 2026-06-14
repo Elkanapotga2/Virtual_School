@@ -9,7 +9,7 @@ $action = isset($_GET['action']) ? $_GET['action'] : '';
 // ─────────────────────────────────────────────────────────────────────────────
 if ($action === 'get_lessons') {
     try {
-        $query = "SELECT l.id, l.titre, l.type_support, l.support_url, l.quiz_question, 
+        $query = "SELECT l.id, l.module_id, l.titre, l.type_support, l.support_url, l.quiz_question, 
                          m.titre AS module_name, u.username AS enseignant_name 
                   FROM lessons l
                   JOIN modules m ON l.module_id = m.id

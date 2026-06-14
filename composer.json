@@ -1,0 +1,9 @@
+{
+  "require": {
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*"
+  },
+  "config": {
+    "platform-check": false
+  }
+}

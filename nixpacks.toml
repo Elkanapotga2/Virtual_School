@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["php83", "php83Extensions.pdo_mysql", "php83Extensions.mysqli", "caddy"]
+
+[start]
+cmd = "php-fpm83 -D && caddy run --config Caddyfile"

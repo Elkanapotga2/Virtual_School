@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual School — Connexion</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --ink: #0d0d0d;
+            --paper: #f5f0e8;
+            --cream: #ede8da;
+            --accent: #c8392b;
+            --gold: #b8960c;
+            --muted: #7a7060;
+            --border: #d4cfc0;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .panel-left {
+            width: 45%;
+            background: var(--ink);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--paper);
+        }
+
+        .brand span {
+            color: var(--accent);
+        }
+
+        .panel-tagline h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.6rem;
+            color: var(--paper);
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .panel-tagline h2 em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .panel-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+        }
+
+        .auth-box {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .top-link {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 2.5rem;
+        }
+
+        .top-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.45rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.85rem 1rem;
+            background: var(--cream);
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            color: var(--ink);
+            outline: none;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .msg {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            display: none;
+        }
+
+        .msg.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+            display: block;
+        }
+
+        .msg.error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+            display: block;
+        }
+
+        @media (max-width: 700px) {
+            .panel-left {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="panel-left">
+        <div class="brand">Virtual<span>School</span></div>
+        <div class="panel-tagline">
+            <h2>Bon retour<br>parmi<br><em>nous.</em></h2>
+            <p>Connectez-vous pour former de jeunes esprits brillants ou pour poursuivre votre formation.</p>
+        </div>
+        <div class="panel-footer">INF222 — TP LMS &nbsp;·&nbsp; Prof. Messi</div>
+    </div>
+
+    <div class="panel-right">
+        <div class="auth-box">
+            <div class="top-link">Pas encore de compte ? <a href="signup.html">S'inscrire →</a></div>
+            <h1 class="auth-title">Se connecter</h1>
+            <p class="auth-sub">Entrez vos identifiants pour accéder au LMS</p>
+
+            <div class="form-group">
+                <label>Nom d'utilisateur</label>
+                <input id="username" type="text" placeholder="ex: Potga Samuel">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input id="password" type="password" placeholder="••••••••">
+            </div>
+
+            <button class="btn-primary" onclick="login()">Se connecter</button>
+            <div id="login-msg" class="msg"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "api/login.php";
+
+        async function login() {
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value;
+            const msg = document.getElementById("login-msg");
+            msg.className = "msg";
+
+            if (!username || !password) {
+                msg.className = "msg error"; msg.textContent = "Veuillez remplir tous les champs."; return;
+            }
+
+            const btn = document.querySelector(".btn-primary");
+            btn.textContent = "Connexion..."; btn.disabled = true;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    msg.className = "msg error"; msg.textContent = data.error || "Identifiants incorrects.";
+                } else {
+                    // Sauvegarde des infos de session côté client
+                    localStorage.setItem("user_role", data.role); // 'etudiant', 'enseignant', ou 'promoteur'
+                    localStorage.setItem("username", username);
+                    localStorage.setItem("user_id", data.user_id);
+
+                    msg.className = "msg success"; msg.textContent = "✅ Connexion réussie ! Redirection...";
+                    setTimeout(() => window.location.href = "index.html", 1000);
+                }
+            } catch (e) {
+                msg.className = "msg error"; msg.textContent = "Impossible de contacter le serveur.";
+            }
+            btn.textContent = "Se connecter"; btn.disabled = false;
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual School — Plateforme LMS Universitaire</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --ink: #0d0d0d;
+            --paper: #f5f0e8;
+            --cream: #ede8da;
+            --accent: #c8392b;
+            --gold: #b8960c;
+            --muted: #7a7060;
+            --border: #d4cfc0;
+            --card-bg: #faf7f2;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ── HEADER & NAV ── */
+        header {
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 2rem;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--ink);
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.7rem 1.4rem;
+            border-radius: 6px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: 1.5px solid transparent;
+        }
+
+        .btn-login {
+            color: var(--ink);
+            border-color: var(--border);
+            background: transparent;
+        }
+
+        .btn-login:hover {
+            background: var(--cream);
+            border-color: var(--ink);
+        }
+
+        .btn-signup {
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .btn-signup:hover {
+            background: #2a2a2a;
+        }
+
+        /* ── HERO SECTION ── */
+        .hero {
+            max-width: 1000px;
+            margin: 4rem auto 3rem;
+            text-align: center;
+            padding: 0 2rem;
+            flex: 1;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--accent);
+            background: rgba(200, 57, 43, 0.08);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 0.3rem 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 6vw, 4.2rem);
+            color: var(--ink);
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 em {
+            color: var(--gold);
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .hero p {
+            color: var(--muted);
+            margin: 1.5rem auto 2.5rem;
+            font-size: 1.15rem;
+            line-height: 1.6;
+            max-width: 600px;
+        }
+
+        .hero-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .btn-lg {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            box-shadow: 0 4px 15px rgba(13, 13, 13, 0.05);
+        }
+
+        /* ── ROLES / FEATURES SECTION ── */
+        .roles-section {
+            background: var(--cream);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 5rem 2rem;
+        }
+
+        .section-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .section-title em {
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        .grid-roles {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .role-card {
+            background: var(--card-bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 2.2rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .role-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(13, 13, 13, 0.04);
+            border-color: var(--ink);
+        }
+
+        .role-icon {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .role-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            color: var(--ink);
+        }
+
+        .role-card p {
+            font-size: 0.92rem;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            padding: 2.5rem 2rem;
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--muted);
+            border-top: 1px solid transparent;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        footer a {
+            color: var(--ink);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 650px) {
+
+            header,
+            footer {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .hero h1 {
+                font-size: 2.3rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                gap: 0.8rem;
+                align-items: center;
+            }
+
+            .btn-lg {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <a href="#" class="brand">Virtual<span>School</span></a>
+        <div class="nav-links">
+            <a href="login.html" class="btn btn-login">Se connecter</a>
+            <a href="signup.html" class="btn btn-signup">Créer un compte</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <span class="badge">Système de Gestion de l'Apprentissage (LMS)</span>
+        <h1>Le savoir académique,<br>conçu pour les <em>esprits brillants</em>.</h1>
+        <p>Une infrastructure numérique robuste dédiée au partage de cours multimédias, aux évaluations de progression
+            et aux certifications universitaires.</p>
+        <div class="hero-actions">
+            <a href="signup.html" class="btn btn-signup btn-lg">Commencer dès aujourd'hui</a>
+            <a href="login.html" class="btn btn-login btn-lg">Accéder à mon espace</a>
+        </div>
+    </section>
+
+    <section class="roles-section">
+        <div class="section-container">
+            <h2 class="section-title">Une plateforme unique. <em>Trois écosystèmes.</em></h2>
+
+            <div class="grid-roles">
+                <div class="role-card">
+                    <div class="role-icon">✒️</div>
+                    <h3>Espace Enseignant</h3>
+                    <p>Structurez vos enseignements en leçons interactives. Intégrez vos supports de cours sous forme de
+                        documents PDF ou de vidéos, et associez-y des quiz de validation instantanés.</p>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-icon">📖</div>
+                    <h3>Espace Étudiant</h3>
+                    <p>Suivez vos cours de manière autonome et fluide. Mesurez votre progression en temps réel grâce aux
+                        évaluations de fin de leçon qui calculent votre taux de réussite.</p>
+                </div>
+
+                <div class="role-card">
+                    <div class="role-icon">🎓</div>
+                    <h3>Espace Promoteur</h3>
+                    <p>Définissez l'architecture des modules d'apprentissage. Supervisez les parcours de formation et
+                        délivrez de manière automatique ou validée des certificats d'excellence.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div>INF222 — Travail Pratique LMS &nbsp;·&nbsp; Niveau L2</div>
+        <div>Sous la direction de : <strong>Prof. Messi</strong></div>
+        <div><a href="login.html">Administration →</a></div>
+    </footer>
+
+</body>
+
+</html>

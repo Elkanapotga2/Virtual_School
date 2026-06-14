@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual School — LMS</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        /* Tout ton style d'origine est conservé à l'identique */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --ink: #0d0d0d;
+            --paper: #f5f0e8;
+            --cream: #ede8da;
+            --accent: #c8392b;
+            --gold: #b8960c;
+            --muted: #7a7060;
+            --border: #d4cfc0;
+            --card-bg: #faf7f2;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            height: 60px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--paper);
+            text-decoration: none;
+        }
+
+        .nav-brand span {
+            color: var(--accent);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-user {
+            color: rgba(245, 240, 232, 0.65);
+            font-size: 0.85rem;
+        }
+
+        .nav-user strong {
+            color: var(--paper);
+        }
+
+        .btn-nav {
+            padding: 0.45rem 1rem;
+            border-radius: 5px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-write {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-write:hover {
+            background: #a93226;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: rgba(245, 240, 232, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-logout:hover {
+            color: var(--paper);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .hero {
+            background: var(--ink);
+            padding: 3.5rem 2rem 3rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
+            color: var(--paper);
+            line-height: 1.15;
+        }
+
+        .hero h1 em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .hero p {
+            color: rgba(245, 240, 232, 0.5);
+            margin-top: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        .search-bar {
+            max-width: 560px;
+            margin: -1.5rem auto 0;
+            display: flex;
+            gap: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.9rem 1.2rem;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            background: white;
+            color: var(--ink);
+        }
+
+        .search-bar button {
+            padding: 0 1.4rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .layout {
+            max-width: 1100px;
+            margin: 3rem auto;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2.5rem;
+            padding: 0 2rem;
+        }
+
+        .filters {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.8rem;
+            flex-wrap: wrap;
+        }
+
+        .filters span {
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .filter-btn {
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: transparent;
+            font-size: 0.82rem;
+            color: var(--muted);
+            cursor: pointer;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: var(--ink);
+            color: var(--paper);
+            border-color: var(--ink);
+        }
+
+        .article-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.6rem;
+            margin-bottom: 15px;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-cat {
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 0.15rem 0.6rem;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-excerpt {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.65;
+            margin-bottom: 1rem;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--ink);
+            color: var(--paper);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .btn-read {
+            background: var(--cream);
+            color: var(--ink);
+            border-color: var(--border);
+            text-decoration: none;
+        }
+
+        .sidebar-widget {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.4rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .widget-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Nouveaux éléments spécifiques au LMS intégrés au style */
+        .progress-bar-container {
+            background: var(--cream);
+            border-radius: 4px;
+            height: 8px;
+            width: 100%;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: var(--gold);
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(13, 13, 13, 0.6);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--paper);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .modal input,
+        .modal textarea,
+        .modal select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--cream);
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            color: var(--ink);
+            outline: none;
+            margin-bottom: 1rem;
+        }
+
+        .btn-publish {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 999;
+            background: var(--ink);
+            color: var(--paper);
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <a href="index.html" class="nav-brand">Virtual<span>School</span></a>
+        <div class="nav-right">
+            <span class="nav-user">Bonjour, <strong id="nav-username">—</strong> (<span
+                    id="user-role-badge">—</span>)</span>
+            <button class="btn-nav btn-write" id="action-btn" onclick="openModal()">✏️ Charger un Cours</button>
+            <button class="btn-nav btn-logout" onclick="logout()">Déconnexion</button>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1 id="hero-title">Les <em>meilleurs génies</em><br>naissent ici.</h1>
+        <p>Parcourez vos modules et progressez à votre rythme.</p>
+    </div>
+
+    <div style="padding: 0 2rem;">
+        <div class="search-bar">
+            <input id="search-input" placeholder="Rechercher un cours ou un module..."
+                onkeydown="if(event.key==='Enter') searchLessons()">
+            <button onclick="searchLessons()">🔍</button>
+        </div>
+    </div>
+
+    <div class="layout">
+        <main>
+            <div class="filters">
+                <span>Modules :</span>
+                <div id="module-filters-list" style="display:inline-flex; gap:0.5rem;">
+                    <button class="filter-btn active" onclick="loadLessons(null)">Tous les cours</button>
+                </div>
+            </div>
+
+            <div id="lessons-list">
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <div class="sidebar-widget" id="widget-stats">
+                <div class="widget-title">📊 Mes Statistiques</div>
+                <div id="stat-content-area">
+                </div>
+            </div>
+
+            <div class="sidebar-widget" id="widget-certifs" style="display:none;">
+                <div class="widget-title">🎓 Mes Certificats</div>
+                <ul id="certificat-list" style="list-style:none; font-size:0.85rem;">
+                    <li>Aucun certificat pour le moment.</li>
+                </ul>
+            </div>
+        </aside>
+    </div>
+
+    <div class="modal-overlay" id="main-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-title">✏️ Ajouter une nouvelle leçon</h2>
+                <button style="background:none; border:none; font-size:1.4rem; cursor:pointer;"
+                    onclick="closeModal()">×</button>
+            </div>
+            <div id="modal-form-content">
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const PHP_API = "api/lms_handler.php";
+
+        // Gestion de session
+        function getRole() { return localStorage.getItem("user_role") || "etudiant"; }
+        function getUsername() { return localStorage.getItem("username") || "Invité"; }
+
+        // Initialisation de la page en fonction du rôle
+        document.addEventListener("DOMContentLoaded", () => {
+            const role = getRole();
+            document.getElementById("nav-username").textContent = getUsername();
+            document.getElementById("user-role-badge").textContent = role.toUpperCase();
+
+            const actionBtn = document.getElementById("action-btn");
+            const statWidget = document.getElementById("stat-content-area");
+
+            if (role === "enseignant") {
+                actionBtn.textContent = "➕ Ajouter une Leçon";
+                document.getElementById("hero-title").innerHTML = "Espace <em>Enseignant</em>.<br>Partagez votre savoir.";
+                statWidget.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; padding: 0.4rem 0;"><span>Cours créés</span><strong style="color:var(--accent);">4</strong></div>
+                    <div style="display:flex; justify-content:space-between; padding: 0.4rem 0;"><span>Évaluations actives</span><strong style="color:var(--accent);">4</strong></div>
+                `;
+            } else if (role === "promoteur") {
+                actionBtn.textContent = "⚙️ Définir un Module";
+                document.getElementById("hero-title").innerHTML = "Espace <em>Promoteur</em>.<br>Gérez les certifications.";
+                statWidget.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; padding: 0.4rem 0;"><span>Modules Total</span><strong style="color:var(--accent);">3</strong></div>
+                    <div style="display:flex; justify-content:space-between; padding: 0.4rem 0;"><span>Certificats Délivrés</span><strong style="color:var(--accent);">12</strong></div>
+                `;
+            } else { // Étudiant
+                actionBtn.style.display = "none"; // L'étudiant ne crée rien
+                document.getElementById("widget-certifs").style.display = "block";
+                statWidget.innerHTML = `
+                    <div style="margin-bottom:10px;">
+                        <div style="display:flex; justify-content:space-between; font-size:0.85rem;"><span>Progression globale</span><strong>45%</strong></div>
+                        <div class="progress-bar-container"><div class="progress-bar" style="width: 45%;"></div></div>
+                    </div>
+                `;
+            }
+            loadLessons();
+        });
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg; t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), 3000);
+        }
+
+        // Configuration de la boîte de dialogue modale selon le rôle
+        function openModal() {
+            const role = getRole();
+            const formZone = document.getElementById("modal-form-content");
+
+            if (role === "enseignant") {
+                document.getElementById("modal-title").textContent = "➕ Publier une leçon";
+                formZone.innerHTML = `
+                    <label>Titre de la leçon *</label>
+                    <input id="l-title" placeholder="ex: Introduction aux bases de données">
+                    
+                    <label>Module de rattachement</label>
+                    <select id="l-module"><option value="1">Module Base de Données</option></select>
+
+                    <label>Type de support *</label>
+                    <select id="l-type" onchange="toggleSupportField()">
+                        <option value="pdf">Document PDF (Lien ou nom de fichier)</option>
+                        <option value="video">Vidéo (Lien MP4 / YouTube)</option>
+                    </select>
+
+                    <label>Lien / Fichier du cours *</label>
+                    <input id="l-url" placeholder="cours.pdf ou URL vidéo">
+
+                    <h3 style="font-family:'Playfair Display'; margin: 15px 0 10px 0; font-size:1.1rem; border-bottom:1px solid var(--border);">📝 Évaluation de fin de leçon</h3>
+                    <label>Question du Quiz</label>
+                    <input id="q-text" placeholder="Ex: Que signifie SQL ?">
+                    <label>Réponse attendue</label>
+                    <input id="q-reply" placeholder="Structured Query Language">
+
+                    <button class="btn-publish" onclick="submitLesson()">Publier la leçon & le Quiz</button>
+                `;
+            } else if (role === "promoteur") {
+                document.getElementById("modal-title").textContent = "⚙️ Créer un nouveau Module";
+                formZone.innerHTML = `
+                    <label>Nom du Module *</label>
+                    <input id="m-title" placeholder="ex: Développement Web Avancé">
+                    <label>Description</label>
+                    <textarea id="m-desc" placeholder="Décrivez les compétences visées..."></textarea>
+                    <button class="btn-publish" onclick="submitModule()">Créer le Module</button>
+                `;
+            }
+            document.getElementById("main-modal").classList.add("open");
+        }
+
+        function closeModal() { document.getElementById("main-modal").classList.remove("open"); }
+
+        // Rendu AJAX des leçons
+        async function loadLessons(moduleId = null) {
+            const listZone = document.getElementById("lessons-list");
+            listZone.innerHTML = "Chargement des cours...";
+
+            try {
+                const res = await fetch(`${PHP_API}?action=get_lessons`);
+                const responseData = await res.json();
+                const lessons = responseData.data || [];
+
+                if (lessons.length === 0) {
+                    listZone.innerHTML = '<div style="text-align:center; padding:2rem; color:var(--muted)">Aucune leçon disponible pour le moment.</div>';
+                    return;
+                }
+
+                listZone.innerHTML = "";
+                lessons.forEach(l => {
+                    const card = document.createElement("div");
+                    card.className = "article-card";
+                    card.innerHTML = `
+                        <div class="card-meta">
+                            <span class="card-cat">${l.type_support.toUpperCase()}</span>
+                            <span style="font-size:0.78rem; color:var(--muted)">Module: ${l.module_name}</span>
+                        </div>
+                        <div class="card-title">${l.titre}</div>
+                        <div class="card-footer">
+                            <span style="font-size:0.85rem; color:var(--muted)">Par: Prof. ${l.enseignant_name}</span>
+                            <div style="display:flex; gap:10px;">
+                                <a href="${l.support_url}" target="_blank" class="btn-sm btn-read">📖 Étudier le cours</a>
+                                ${getRole() === 'etudiant' ? `<button class="btn-sm btn-write" style="background:var(--gold);" onclick="openQuiz(${l.id})">📝 Passer l'Évaluation</button>` : ''}
+                            </div>
+                        </div>
+                    `;
+                    listZone.appendChild(card);
+                });
+            } catch (e) {
+                // Simulation locale pour que ton rendu fonctionne avant que ton PHP soit écrit
+                mockLessons(listZone);
+            }
+        }
+
+        // Données d'exemple conformes au cahier des charges de M. Messi
+        function mockLessons(zone) {
+            zone.innerHTML = `
+                <div class="article-card">
+                    <div class="card-meta"><span class="card-cat">PDF</span> <span style="font-size:0.78rem; color:var(--muted)">Module 1 : Base de Données</span></div>
+                    <div class="card-title">Leçon 1 : Modèle Entité-Association & Algèbre Relationnelle</div>
+                    <div class="card-excerpt">Ce cours introduit les concepts de clés primaires, étrangères et la modélisation de schémas MySQL conformes aux exigences du cours INF222.</div>
+                    <div class="card-footer">
+                        <span style="font-size:0.85rem; color:var(--muted)">Par: Prof. Messi</span>
+                        <div style="display:flex; gap:10px;">
+                            <a href="#" class="btn-sm btn-read">📖 Lire le PDF</a>
+                            ${getRole() === 'etudiant' ? `<button class="btn-sm btn-write" style="background:var(--gold);" onclick="showToast('Ouverture du Quiz de validation...')">📝 Faire l'Évaluation</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function submitLesson() {
+            // Logique AJAX POST pour insérer la leçon dans ta future table MySQL via PHP
+            showToast("✅ Leçon enregistrée avec succès avec son évaluation !");
+            closeModal();
+            loadLessons();
+        }
+    </script>
+</body>
+
+</html>

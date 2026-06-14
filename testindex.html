@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual School — LMS</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --ink: #0d0d0d;
+            --paper: #f5f0e8;
+            --cream: #ede8da;
+            --accent: #c8392b;
+            --gold: #b8960c;
+            --muted: #7a7060;
+            --border: #d4cfc0;
+            --card-bg: #faf7f2;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        /* NAV */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            height: 60px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .nav-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--paper);
+            text-decoration: none;
+        }
+
+        .nav-brand span {
+            color: var(--accent);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-user {
+            color: rgba(245, 240, 232, 0.65);
+            font-size: 0.85rem;
+        }
+
+        .nav-user strong {
+            color: var(--paper);
+        }
+
+        .btn-nav {
+            padding: 0.45rem 1rem;
+            border-radius: 5px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-write {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .btn-write:hover {
+            background: #a93226;
+        }
+
+        .btn-logout {
+            background: transparent;
+            color: rgba(245, 240, 232, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-logout:hover {
+            color: var(--paper);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* HERO */
+        .hero {
+            background: var(--ink);
+            padding: 3.5rem 2rem 3rem;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.2rem, 5vw, 3.5rem);
+            color: var(--paper);
+            line-height: 1.15;
+        }
+
+        .hero h1 em {
+            color: var(--gold);
+            font-style: italic;
+        }
+
+        .hero p {
+            color: rgba(245, 240, 232, 0.5);
+            margin-top: 0.8rem;
+            font-size: 0.95rem;
+        }
+
+        /* SEARCH */
+        .search-bar {
+            max-width: 560px;
+            margin: -1.5rem auto 0;
+            display: flex;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.9rem 1.2rem;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            background: white;
+            color: var(--ink);
+        }
+
+        .search-bar button {
+            padding: 0 1.4rem;
+            background: var(--accent);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        /* LAYOUT */
+        .layout {
+            max-width: 1100px;
+            margin: 3rem auto;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2.5rem;
+            padding: 0 2rem;
+        }
+
+        /* FILTERS */
+        .filters {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 1.8rem;
+            flex-wrap: wrap;
+        }
+
+        .filters span {
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .filter-btn {
+            padding: 0.35rem 0.85rem;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: transparent;
+            font-size: 0.82rem;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active,
+        .filter-btn:hover {
+            background: var(--ink);
+            color: var(--paper);
+            border-color: var(--ink);
+        }
+
+        /* CARDS */
+        .article-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.6rem;
+            margin-bottom: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .article-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(13, 13, 13, 0.06);
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .card-cat {
+            font-size: 0.72rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            border-radius: 20px;
+            padding: 0.15rem 0.6rem;
+        }
+
+        .card-cat.video {
+            color: #7c3aed;
+            border-color: #7c3aed;
+        }
+
+        .card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-bottom: 0.5rem;
+        }
+
+        .card-excerpt {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.65;
+            margin-bottom: 1rem;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .btn-read {
+            background: var(--cream);
+            color: var(--ink);
+            border-color: var(--border);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-read:hover {
+            border-color: var(--ink);
+        }
+
+        .btn-quiz {
+            background: var(--gold);
+            color: white;
+            border-color: var(--gold);
+        }
+
+        .btn-quiz:hover {
+            background: #9a7a0a;
+        }
+
+        .btn-validated {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-color: #a5d6a7;
+            cursor: default;
+        }
+
+        /* SIDEBAR */
+        .sidebar-widget {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1.4rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .widget-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.88rem;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-val {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+
+        /* PROGRESSION */
+        .progress-ring-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .progress-ring-label {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--ink);
+            margin-top: 0.5rem;
+        }
+
+        .progress-ring-sub {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        .progress-bar-container {
+            background: var(--cream);
+            border-radius: 4px;
+            height: 8px;
+            width: 100%;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: var(--gold);
+            height: 100%;
+            width: 0%;
+            transition: width 0.8s ease;
+            border-radius: 4px;
+        }
+
+        /* CERTIFICAT */
+        .cert-card {
+            background: linear-gradient(135deg, #faf7f2, #ede8da);
+            border: 1.5px solid var(--gold);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            text-align: center;
+        }
+
+        .cert-card strong {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .cert-card span {
+            font-size: 0.75rem;
+            color: var(--muted);
+        }
+
+        .cert-download {
+            display: inline-block;
+            margin-top: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            background: var(--gold);
+            color: white;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            background: rgba(13, 13, 13, 0.6);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--paper);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+        }
+
+        .modal label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.05em;
+        }
+
+        .modal input,
+        .modal textarea,
+        .modal select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            background: var(--cream);
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            color: var(--ink);
+            outline: none;
+            margin-bottom: 1rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.92rem;
+        }
+
+        .modal input:focus,
+        .modal select:focus,
+        .modal textarea:focus {
+            border-color: var(--ink);
+        }
+
+        .modal textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .modal-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.05rem;
+            margin: 1rem 0 0.8rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .btn-publish {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--ink);
+            color: var(--paper);
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        .btn-publish:hover {
+            background: #2a2a2a;
+        }
+
+        .btn-publish:disabled {
+            background: var(--muted);
+            cursor: not-allowed;
+        }
+
+        .modal-msg {
+            padding: 0.7rem 1rem;
+            border-radius: 6px;
+            font-size: 0.88rem;
+            margin-top: 0.8rem;
+        }
+
+        .modal-msg.ok {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .modal-msg.err {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ef9a9a;
+        }
+
+        /* QUIZ MODAL SPECIFIQUE */
+        .quiz-question {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            margin-bottom: 1.2rem;
+            line-height: 1.4;
+        }
+
+        .quiz-result {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .quiz-result.success {
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+        }
+
+        .quiz-result.fail {
+            background: #fff3e0;
+            border: 1px solid #ffcc80;
+        }
+
+        .quiz-score {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .quiz-score.success {
+            color: #2e7d32;
+        }
+
+        .quiz-score.fail {
+            color: #e65100;
+        }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 999;
+            background: var(--ink);
+            color: var(--paper);
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            transform: translateY(80px);
+            opacity: 0;
+            transition: all 0.3s;
+            max-width: 320px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--muted);
+        }
+
+        .empty-state .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state p {
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* LOADING */
+        .loader {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            padding: 3rem;
+        }
+
+        .loader span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            animation: bounce 1.2s infinite;
+        }
+
+        .loader span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loader span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            80%,
+            100% {
+                transform: scale(0.8);
+                opacity: 0.4
+            }
+
+            40% {
+                transform: scale(1.2);
+                opacity: 1
+            }
+        }
+
+        /* MOBILE */
+        @media (max-width: 768px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+
+            .nav-user {
+                display: none;
+            }
+
+            .card-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <a href="index.html" class="nav-brand">Virtual<span>School</span></a>
+        <div class="nav-right">
+            <span class="nav-user">Bonjour, <strong id="nav-username">—</strong> (<span
+                    id="user-role-badge">—</span>)</span>
+            <button class="btn-nav btn-write" id="action-btn" onclick="openModal()" style="display:none;">✏️
+                Action</button>
+            <button class="btn-nav btn-logout" onclick="logout()">Déconnexion</button>
+        </div>
+    </nav>
+
+    <div class="hero">
+        <h1 id="hero-title">Les <em>meilleurs génies</em><br>naissent ici.</h1>
+        <p>Parcourez vos modules et progressez à votre rythme.</p>
+    </div>
+
+    <div style="padding: 0 2rem;">
+        <div class="search-bar">
+            <input id="search-input" placeholder="Rechercher un cours ou un module..."
+                onkeydown="if(event.key==='Enter') searchLessons()">
+            <button onclick="searchLessons()">🔍</button>
+        </div>
+    </div>
+
+    <div class="layout">
+        <main>
+            <div class="filters">
+                <span>Modules :</span>
+                <div id="module-filters-list" style="display:inline-flex; gap:0.5rem; flex-wrap:wrap;">
+                    <button class="filter-btn active" onclick="filterByModule(null, this)">Tous les cours</button>
+                </div>
+            </div>
+            <div id="lessons-list">
+                <div class="loader"><span></span><span></span><span></span></div>
+            </div>
+        </main>
+
+        <aside>
+            <div class="sidebar-widget" id="widget-stats">
+                <div class="widget-title" id="widget-stats-title">📊 Mes Statistiques</div>
+                <div id="stat-content-area">
+                    <div class="loader"><span></span><span></span><span></span></div>
+                </div>
+            </div>
+            <div class="sidebar-widget" id="widget-certifs" style="display:none;">
+                <div class="widget-title">🎓 Mes Certificats</div>
+                <div id="certificat-list">
+                    <p style="font-size:0.85rem;color:var(--muted)">Aucun certificat pour le moment.</p>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- MODAL PRINCIPALE (leçon, module, quiz) -->
+    <div class="modal-overlay" id="main-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modal-title">Action</h2>
+                <button style="background:none;border:none;font-size:1.5rem;cursor:pointer;line-height:1;"
+                    onclick="closeModal()">×</button>
+            </div>
+            <div id="modal-form-content"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ─────────────────────────────────────────────
+        // CONFIGURATION — Adapter si le dossier API change
+        // ─────────────────────────────────────────────
+        const API = {
+            login: "api/login.php",
+            register: "api/register.php",
+            handler: "api/lms_handler.php"
+        };
+
+        // ─────────────────────────────────────────────
+        // SESSION
+        // ─────────────────────────────────────────────
+        const getRole = () => localStorage.getItem("user_role") || "etudiant";
+        const getUsername = () => localStorage.getItem("username") || "Invité";
+        const getUserId = () => parseInt(localStorage.getItem("user_id")) || 0;
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+
+        // ─────────────────────────────────────────────
+        // INIT PAGE
+        // ─────────────────────────────────────────────
+        document.addEventListener("DOMContentLoaded", () => {
+            // Vérification de session
+            if (!localStorage.getItem("user_role")) {
+                window.location.href = "login.html";
+                return;
+            }
+
+            const role = getRole();
+            document.getElementById("nav-username").textContent = getUsername();
+            document.getElementById("user-role-badge").textContent = role.charAt(0).toUpperCase() + role.slice(1);
+
+            const actionBtn = document.getElementById("action-btn");
+
+            if (role === "enseignant") {
+                actionBtn.style.display = "inline-block";
+                actionBtn.textContent = "➕ Publier une Leçon";
+                document.getElementById("hero-title").innerHTML = "Espace <em>Enseignant</em>.<br>Partagez votre savoir.";
+            } else if (role === "promoteur") {
+                actionBtn.style.display = "inline-block";
+                actionBtn.textContent = "⚙️ Créer un Module";
+                document.getElementById("hero-title").innerHTML = "Espace <em>Promoteur</em>.<br>Gérez les certifications.";
+            } else {
+                document.getElementById("hero-title").innerHTML = `Bienvenue, <em>${getUsername()}</em>.<br>Continuez à apprendre.`;
+                document.getElementById("widget-certifs").style.display = "block";
+            }
+
+            loadModuleFilters();
+            loadLessons();
+            loadStats();
+        });
+
+        // ─────────────────────────────────────────────
+        // TOAST
+        // ─────────────────────────────────────────────
+        function showToast(msg, duration = 3000) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), duration);
+        }
+
+        // ─────────────────────────────────────────────
+        // MODAL
+        // ─────────────────────────────────────────────
+        function openModal() {
+            const role = getRole();
+            if (role === "enseignant") openLessonForm();
+            else if (role === "promoteur") openModuleForm();
+            document.getElementById("main-modal").classList.add("open");
+        }
+
+        function closeModal() {
+            document.getElementById("main-modal").classList.remove("open");
+        }
+
+        // Fermer modal en cliquant hors
+        document.getElementById("main-modal").addEventListener("click", (e) => {
+            if (e.target === document.getElementById("main-modal")) closeModal();
+        });
+
+        // ─────────────────────────────────────────────
+        // FORMULAIRE LEÇON (Enseignant)
+        // ─────────────────────────────────────────────
+        async function openLessonForm() {
+            document.getElementById("modal-title").textContent = "➕ Publier une nouvelle leçon";
+
+            // Charger les modules pour le select
+            let moduleOptions = '<option value="">Chargement...</option>';
+            try {
+                const res = await fetch(`${API.handler}?action=get_modules`);
+                const data = await res.json();
+                if (data.data && data.data.length > 0) {
+                    moduleOptions = data.data.map(m => `<option value="${m.id}">${m.titre}</option>`).join('');
+                } else {
+                    moduleOptions = '<option value="">Aucun module disponible — demandez au promoteur</option>';
+                }
+            } catch (e) {
+                moduleOptions = '<option value="">Erreur de chargement</option>';
+            }
+
+            document.getElementById("modal-form-content").innerHTML = `
+        <label>Titre de la leçon *</label>
+        <input id="l-title" placeholder="ex: Introduction aux bases de données">
+
+        <label>Module de rattachement *</label>
+        <select id="l-module">${moduleOptions}</select>
+
+        <label>Type de support *</label>
+        <select id="l-type">
+            <option value="pdf">Document PDF (URL)</option>
+            <option value="video">Vidéo (URL YouTube / MP4)</option>
+        </select>
+
+        <label>Lien du support (URL) *</label>
+        <input id="l-url" type="url" placeholder="https://exemple.com/cours.pdf">
+
+        <div class="modal-section-title">📝 Évaluation de fin de leçon</div>
+        <label>Question du Quiz *</label>
+        <input id="q-text" placeholder="Ex: Que signifie SQL ?">
+        <label>Réponse attendue *</label>
+        <input id="q-reply" placeholder="Ex: Structured Query Language">
+
+        <button class="btn-publish" id="btn-publish-lesson" onclick="submitLesson()">Publier la leçon & le Quiz</button>
+        <div id="lesson-modal-msg" style="display:none;" class="modal-msg"></div>
+    `;
+        }
+
+        async function submitLesson() {
+            const titre = document.getElementById("l-title").value.trim();
+            const module_id = document.getElementById("l-module").value;
+            const type_support = document.getElementById("l-type").value;
+            const support_url = document.getElementById("l-url").value.trim();
+            const quiz_question = document.getElementById("q-text").value.trim();
+            const quiz_reponse = document.getElementById("q-reply").value.trim();
+
+            const msgEl = document.getElementById("lesson-modal-msg");
+            const btn = document.getElementById("btn-publish-lesson");
+
+            const showErr = (txt) => { msgEl.className = "modal-msg err"; msgEl.textContent = txt; msgEl.style.display = "block"; };
+
+            if (!titre || !module_id || !support_url || !quiz_question || !quiz_reponse) {
+                showErr("Veuillez remplir tous les champs obligatoires."); return;
+            }
+
+            btn.disabled = true; btn.textContent = "Publication en cours...";
+
+            try {
+                const res = await fetch(`${API.handler}?action=add_lesson`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        titre, module_id: parseInt(module_id),
+                        enseignant_id: getUserId(),
+                        type_support, support_url, quiz_question, quiz_reponse
+                    })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    showErr(data.error || "Erreur lors de la publication.");
+                } else {
+                    msgEl.className = "modal-msg ok"; msgEl.textContent = "✅ Leçon publiée avec succès !"; msgEl.style.display = "block";
+                    showToast("✅ Leçon publiée !");
+                    setTimeout(() => { closeModal(); loadLessons(); loadStats(); }, 1500);
+                }
+            } catch (e) {
+                showErr("Impossible de contacter le serveur. Vérifiez votre configuration PHP.");
+            }
+            btn.disabled = false; btn.textContent = "Publier la leçon & le Quiz";
+        }
+
+        // ─────────────────────────────────────────────
+        // FORMULAIRE MODULE (Promoteur)
+        // ─────────────────────────────────────────────
+        function openModuleForm() {
+            document.getElementById("modal-title").textContent = "⚙️ Créer un nouveau Module";
+            document.getElementById("modal-form-content").innerHTML = `
+        <label>Nom du Module *</label>
+        <input id="m-title" placeholder="ex: Développement Web Avancé">
+        <label>Description</label>
+        <textarea id="m-desc" placeholder="Décrivez les compétences visées par ce module..."></textarea>
+        <button class="btn-publish" id="btn-publish-module" onclick="submitModule()">Créer le Module</button>
+        <div id="module-modal-msg" style="display:none;" class="modal-msg"></div>
+    `;
+        }
+
+        async function submitModule() {
+            const titre = document.getElementById("m-title").value.trim();
+            const description = document.getElementById("m-desc").value.trim();
+            const msgEl = document.getElementById("module-modal-msg");
+            const btn = document.getElementById("btn-publish-module");
+
+            if (!titre) {
+                msgEl.className = "modal-msg err"; msgEl.textContent = "Le nom du module est requis."; msgEl.style.display = "block"; return;
+            }
+
+            btn.disabled = true; btn.textContent = "Création...";
+
+            try {
+                const res = await fetch(`${API.handler}?action=add_module`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ titre, description })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    msgEl.className = "modal-msg err"; msgEl.textContent = data.error || "Erreur."; msgEl.style.display = "block";
+                } else {
+                    msgEl.className = "modal-msg ok"; msgEl.textContent = "✅ Module créé !"; msgEl.style.display = "block";
+                    showToast("✅ Module créé avec succès !");
+                    setTimeout(() => { closeModal(); loadModuleFilters(); loadStats(); }, 1500);
+                }
+            } catch (e) {
+                msgEl.className = "modal-msg err"; msgEl.textContent = "Erreur de connexion au serveur."; msgEl.style.display = "block";
+            }
+            btn.disabled = false; btn.textContent = "Créer le Module";
+        }
+
+        // ─────────────────────────────────────────────
+        // CHARGEMENT DES FILTRES MODULES
+        // ─────────────────────────────────────────────
+        let allLessons = []; // cache global
+        let activeModuleId = null;
+
+        async function loadModuleFilters() {
+            try {
+                const res = await fetch(`${API.handler}?action=get_modules`);
+                const data = await res.json();
+                const modules = data.data || [];
+                const container = document.getElementById("module-filters-list");
+                container.innerHTML = `<button class="filter-btn active" onclick="filterByModule(null, this)">Tous les cours</button>`;
+                modules.forEach(m => {
+                    const btn = document.createElement("button");
+                    btn.className = "filter-btn";
+                    btn.textContent = m.titre;
+                    btn.onclick = () => filterByModule(m.id, btn);
+                    container.appendChild(btn);
+                });
+            } catch (e) { /* silencieux */ }
+        }
+
+        function filterByModule(moduleId, btnEl) {
+            activeModuleId = moduleId;
+            document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+            if (btnEl) btnEl.classList.add("active");
+            renderLessons(allLessons, moduleId);
+        }
+
+        // ─────────────────────────────────────────────
+        // CHARGEMENT & RENDU DES LEÇONS
+        // ─────────────────────────────────────────────
+        async function loadLessons() {
+            const listZone = document.getElementById("lessons-list");
+            listZone.innerHTML = '<div class="loader"><span></span><span></span><span></span></div>';
+
+            try {
+                const res = await fetch(`${API.handler}?action=get_lessons`);
+                const responseData = await res.json();
+                allLessons = responseData.data || [];
+                renderLessons(allLessons, activeModuleId);
+            } catch (e) {
+                listZone.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">⚠️</div>
+                <p>Impossible de charger les leçons.<br>Vérifiez que votre serveur PHP est actif et que les fichiers <code>api/</code> sont en place.</p>
+            </div>`;
+            }
+        }
+
+        function renderLessons(lessons, moduleId = null) {
+            const listZone = document.getElementById("lessons-list");
+            const role = getRole();
+
+            // Filtrer par module si nécessaire
+            const filtered = moduleId
+                ? lessons.filter(l => parseInt(l.module_id) === parseInt(moduleId) || l.module_name && l.module_name === moduleId)
+                : lessons;
+
+            if (filtered.length === 0) {
+                listZone.innerHTML = `
+            <div class="empty-state">
+                <div class="icon">📚</div>
+                <p>${role === 'enseignant' ? 'Aucune leçon publiée. Cliquez sur "Publier une Leçon" pour commencer.' : 'Aucune leçon disponible pour le moment.'}</p>
+            </div>`;
+                return;
+            }
+
+            listZone.innerHTML = "";
+            filtered.forEach(l => {
+                const card = document.createElement("div");
+                card.className = "article-card";
+
+                const typeLabel = l.type_support === 'video' ? 'Vidéo' : 'PDF';
+                const typeClass = l.type_support === 'video' ? 'video' : '';
+
+                // Bouton quiz selon rôle
+                let quizBtn = '';
+                if (role === 'etudiant') {
+                    const validated = isLessonValidated(l.id);
+                    quizBtn = validated
+                        ? `<button class="btn-sm btn-validated" disabled>✅ Validée</button>`
+                        : `<button class="btn-sm btn-quiz" onclick="openQuiz(${l.id}, '${escHtml(l.quiz_question)}')">📝 Évaluation</button>`;
+                }
+
+                card.innerHTML = `
+            <div class="card-meta">
+                <span class="card-cat ${typeClass}">${typeLabel}</span>
+                <span style="font-size:0.78rem; color:var(--muted)">Module : ${escHtml(l.module_name || '—')}</span>
+            </div>
+            <div class="card-title">${escHtml(l.titre)}</div>
+            <div class="card-excerpt">Par : <strong>${escHtml(l.enseignant_name || '—')}</strong></div>
+            <div class="card-footer">
+                <a href="${escHtml(l.support_url)}" target="_blank" rel="noopener" class="btn-sm btn-read">
+                    ${l.type_support === 'video' ? '▶️ Visionner' : '📖 Lire le PDF'}
+                </a>
+                ${quizBtn}
+            </div>
+        `;
+                listZone.appendChild(card);
+            });
+        }
+
+        // ─────────────────────────────────────────────
+        // QUIZ (Étudiant)
+        // ─────────────────────────────────────────────
+        function openQuiz(lessonId, question) {
+            document.getElementById("modal-title").textContent = "📝 Évaluation de fin de leçon";
+            document.getElementById("modal-form-content").innerHTML = `
+        <p class="quiz-question">${escHtml(question)}</p>
+        <label>Votre réponse *</label>
+        <input id="quiz-answer" placeholder="Saisissez votre réponse ici..." onkeydown="if(event.key==='Enter') submitQuiz(${lessonId})">
+        <button class="btn-publish" id="btn-submit-quiz" onclick="submitQuiz(${lessonId})">Valider ma réponse</button>
+        <div id="quiz-result-zone"></div>
+    `;
+            document.getElementById("main-modal").classList.add("open");
+            document.getElementById("quiz-answer").focus();
+        }
+
+        async function submitQuiz(lessonId) {
+            const answer = document.getElementById("quiz-answer").value.trim();
+            const resultZone = document.getElementById("quiz-result-zone");
+            const btn = document.getElementById("btn-submit-quiz");
+
+            if (!answer) { showToast("Veuillez saisir une réponse."); return; }
+
+            btn.disabled = true; btn.textContent = "Vérification...";
+
+            try {
+                const res = await fetch(`${API.handler}?action=submit_quiz`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        etudiant_id: getUserId(),
+                        lesson_id: lessonId,
+                        reponse_etudiant: answer
+                    })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    const cls = data.correct ? "success" : "fail";
+                    resultZone.innerHTML = `
+                <div class="quiz-result ${cls}">
+                    <div class="quiz-score ${cls}">${data.note}%</div>
+                    <p style="margin-top:0.5rem; font-weight:500;">${data.message}</p>
+                    ${data.correct ? '<p style="font-size:0.85rem;margin-top:0.5rem;color:var(--muted)">Cette leçon est maintenant marquée comme validée.</p>' : ''}
+                </div>`;
+
+                    if (data.correct) {
+                        saveValidation(lessonId); // Sauvegarde locale
+                        setTimeout(() => {
+                            closeModal();
+                            loadLessons();   // Rafraîchir les cartes
+                            loadStats();     // Rafraîchir la progression
+                        }, 2500);
+                    }
+                } else {
+                    resultZone.innerHTML = `<div class="modal-msg err">${data.error || "Erreur lors de la soumission."}</div>`;
+                }
+            } catch (e) {
+                resultZone.innerHTML = `<div class="modal-msg err">Erreur de connexion. Vérifiez votre serveur PHP.</div>`;
+            }
+            btn.disabled = false; btn.textContent = "Valider ma réponse";
+        }
+
+        // Cache local des leçons validées (complément à la BDD)
+        function saveValidation(lessonId) {
+            const key = `validated_${getUserId()}`;
+            const validated = JSON.parse(localStorage.getItem(key) || "[]");
+            if (!validated.includes(lessonId)) validated.push(lessonId);
+            localStorage.setItem(key, JSON.stringify(validated));
+        }
+        function isLessonValidated(lessonId) {
+            const key = `validated_${getUserId()}`;
+            const validated = JSON.parse(localStorage.getItem(key) || "[]");
+            return validated.includes(parseInt(lessonId));
+        }
+
+        // ─────────────────────────────────────────────
+        // STATISTIQUES SIDEBAR
+        // ─────────────────────────────────────────────
+        async function loadStats() {
+            const role = getRole();
+            const statArea = document.getElementById("stat-content-area");
+
+            if (role === "etudiant") {
+                try {
+                    const res = await fetch(`${API.handler}?action=get_student_stats&etudiant_id=${getUserId()}`);
+                    const data = await res.json();
+                    const pct = data.progression || 0;
+
+                    statArea.innerHTML = `
+                <div class="progress-ring-wrap">
+                    <svg width="100" height="100" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--cream)" stroke-width="10"/>
+                        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--gold)" stroke-width="10"
+                            stroke-dasharray="${2 * Math.PI * 40}"
+                            stroke-dashoffset="${2 * Math.PI * 40 * (1 - pct / 100)}"
+                            stroke-linecap="round"
+                            transform="rotate(-90 50 50)"
+                            style="transition: stroke-dashoffset 0.8s ease;"/>
+                        <text x="50" y="54" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="18" font-weight="700" fill="var(--ink)">${pct}%</text>
+                    </svg>
+                    <span class="progress-ring-sub">Progression globale</span>
+                </div>
+                <div class="stat-row"><span>Leçons validées</span><span class="stat-val">${data.valides || 0}</span></div>
+                <div class="stat-row"><span>Total des leçons</span><span class="stat-val">${data.total || 0}</span></div>
+            `;
+
+                    // Certificats si progression = 100%
+                    if (pct === 100) {
+                        loadCertificats();
+                    }
+                } catch (e) {
+                    // Fallback sur cache local
+                    const key = `validated_${getUserId()}`;
+                    const validated = JSON.parse(localStorage.getItem(key) || "[]");
+                    const total = allLessons.length || 0;
+                    const pct = total > 0 ? Math.round((validated.length / total) * 100) : 0;
+
+                    statArea.innerHTML = `
+                <div class="stat-row"><span>Leçons validées</span><span class="stat-val">${validated.length}</span></div>
+                <div class="stat-row"><span>Progression (local)</span><span class="stat-val">${pct}%</span></div>
+                <div class="progress-bar-container"><div class="progress-bar" style="width:${pct}%"></div></div>
+            `;
+                }
+            } else if (role === "enseignant") {
+                // Compter les leçons de cet enseignant dans allLessons
+                const mes_lecons = allLessons.filter(l => l.enseignant_name === getUsername() || parseInt(l.enseignant_id) === getUserId());
+                statArea.innerHTML = `
+            <div class="stat-row"><span>Mes leçons publiées</span><span class="stat-val">${mes_lecons.length || allLessons.length}</span></div>
+            <div class="stat-row"><span>Avec évaluation</span><span class="stat-val">${mes_lecons.length || allLessons.length}</span></div>
+        `;
+            } else if (role === "promoteur") {
+                try {
+                    const res = await fetch(`${API.handler}?action=get_modules`);
+                    const data = await res.json();
+                    const modules = data.data || [];
+                    statArea.innerHTML = `
+                <div class="stat-row"><span>Modules créés</span><span class="stat-val">${modules.length}</span></div>
+                <div class="stat-row"><span>Total leçons</span><span class="stat-val">${allLessons.length}</span></div>
+            `;
+                    // Liste des modules dans le widget
+                    if (modules.length > 0) {
+                        const extra = document.createElement("div");
+                        extra.style.marginTop = "0.8rem";
+                        extra.innerHTML = `<div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Modules</div>` +
+                            modules.map(m => `<div style="font-size:0.85rem;padding:0.3rem 0;border-bottom:1px solid var(--border);">📦 ${escHtml(m.titre)}</div>`).join('');
+                        statArea.appendChild(extra);
+                    }
+                } catch (e) {
+                    statArea.innerHTML = `<div class="stat-row"><span>Total leçons</span><span class="stat-val">${allLessons.length}</span></div>`;
+                }
+            }
+        }
+
+        // ─────────────────────────────────────────────
+        // CERTIFICATS (Étudiant — module 100% validé)
+        // ─────────────────────────────────────────────
+        async function loadCertificats() {
+            const certList = document.getElementById("certificat-list");
+            try {
+                const res = await fetch(`${API.handler}?action=get_modules`);
+                const data = await res.json();
+                const modules = data.data || [];
+
+                if (modules.length === 0) {
+                    certList.innerHTML = '<p style="font-size:0.85rem;color:var(--muted)">Aucun certificat disponible.</p>';
+                    return;
+                }
+
+                certList.innerHTML = modules.map(m => `
+            <div class="cert-card">
+                <strong>🎓 ${escHtml(m.titre)}</strong>
+                <span>Module validé avec succès</span><br>
+                <button class="cert-download" onclick="downloadCertificat('${escHtml(m.titre)}')">⬇ Télécharger</button>
+            </div>
+        `).join('');
+            } catch (e) {
+                certList.innerHTML = '<p style="font-size:0.85rem;color:var(--muted)">Erreur de chargement.</p>';
+            }
+        }
+
+        function downloadCertificat(moduleName) {
+            // Génération d'un certificat simple via canvas/print
+            const w = window.open('', '_blank');
+            const now = new Date().toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' });
+            w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
+    <title>Certificat — ${moduleName}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family:'DM Sans',sans-serif; background:#fff; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+        .cert { border: 4px solid #b8960c; padding: 4rem; max-width: 700px; text-align: center; border-radius: 8px; }
+        h1 { font-family:'Playfair Display',serif; font-size:2.5rem; color:#0d0d0d; margin-bottom:0.5rem; }
+        .subtitle { color:#7a7060; font-size:0.95rem; margin-bottom:2rem; }
+        .name { font-family:'Playfair Display',serif; font-size:1.8rem; color:#b8960c; border-bottom:2px solid #b8960c; display:inline-block; padding-bottom:0.3rem; margin:1rem 0; }
+        .module { font-size:1.1rem; margin:1rem 0 2rem; }
+        .date { color:#7a7060; font-size:0.85rem; }
+        .school { font-family:'Playfair Display',serif; font-size:1.2rem; color:#c8392b; margin-top:2rem; }
+        @media print { body { print-color-adjust: exact; } }
+    </style></head><body>
+    <div class="cert">
+        <div class="school">VirtualSchool</div>
+        <h1>Certificat de Réussite</h1>
+        <p class="subtitle">Ce certificat est décerné à</p>
+        <div class="name">${getUsername()}</div>
+        <p class="module">Pour avoir validé avec succès le module :<br><strong>${moduleName}</strong></p>
+        <p class="date">Délivré le ${now} · Plateforme VirtualSchool · INF222</p>
+    </div>
+    <script>window.onload=()=>window.print();<\/script>
+    </body></html>`);
+            w.document.close();
+            showToast("🎓 Certificat généré !");
+        }
+
+        // ─────────────────────────────────────────────
+        // RECHERCHE
+        // ─────────────────────────────────────────────
+        function searchLessons() {
+            const query = document.getElementById("search-input").value.toLowerCase().trim();
+            if (!query) { renderLessons(allLessons, activeModuleId); return; }
+            const filtered = allLessons.filter(l =>
+                l.titre.toLowerCase().includes(query) ||
+                (l.module_name && l.module_name.toLowerCase().includes(query)) ||
+                (l.enseignant_name && l.enseignant_name.toLowerCase().includes(query))
+            );
+            renderLessons(filtered);
+        }
+
+        // ─────────────────────────────────────────────
+        // UTILS
+        // ─────────────────────────────────────────────
+        function escHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+
+</html>

@@ -1,5 +1,14 @@
+{
+    admin off
+}
+
 :8080 {
     root * /app
-    php_fastcgi 127.0.0.1:9000
+    encode gzip
+
+    php_fastcgi unix//run/php/php-fpm.sock {
+        try_files {path} index.php
+    }
+
     file_server
 }

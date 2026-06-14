@@ -1,5 +1,6 @@
 <?php
-require_once 'db.php';
+
+require_once __DIR__ . '/db.php'; // ✅ chemin absolu
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
